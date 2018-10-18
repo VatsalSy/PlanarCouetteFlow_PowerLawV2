@@ -7,7 +7,7 @@ This repository has minor changes from the repository: git@github.com:VatsalSy/P
 In this repository, the second invariant of Velocity vector gradient is calculated at the face center (to get face vector muTemp.x[] at the face center).
 The relevant code snippet is:
 
-'''
+```
 event properties(i++) {
   /*
    $$D_{11} = \frac{\partial u}{\partial x}$$
