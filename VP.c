@@ -146,27 +146,23 @@ event properties(i++) {
   //     muv.x[] = (muTemp[] + muTemp[-1]);
   // }
   // boundary ((scalar *){muv});
-  face vector muTemp[];
+  double muTemp = mu_0;
   foreach_face() {
-    double dudx = (u.x[0,0] - u.x[-1,0]);
-    double dudy = ((u.x[0,1]-u.x[0,-1])+(u.x[-1,1]-u.x[-1,-1]))/4.0;
-    double dvdy = ((u.y[0,1]-u.y[0,-1])+(u.y[-1,1]-u.y[-1,-1]))/4.0;
-    double dvdx = (u.y[0,0] - u.y[-1,0]);
-    double D2 = sqrt(sq(dudx)+sq(dvdy)+0.5*sq(dudy+dvdx))/(Delta);
+    double D11 = (u.x[] - u.x[-1,0]);
+    double D22 = ((u.y[0,1]-u.y[0,-1])+(u.y[-1,1]-u.y[-1,-1]))/4.0;
+    double D12 = 0.5*(((u.x[0,1]-u.x[0,-1])+(u.x[-1,1]-u.x[-1,-1]))/4.0 + (u.y[] - u.y[-1,0]));
+    double D2 = sqrt(sq(D11)+sq(D22)+2.0*sq(D12))/(Delta);
     if (D2 > 0.0) {
       double temp = tauy/(sqrt(2.0)*D2) + mu_0*exp((n-1.0)*log(D2/sqrt(2.0)));
-      muTemp.x[] = (temp < mumax ? temp : mumax);
+      muTemp = min(temp, mumax);
     } else {
       if (tauy > 0.0 || n < 1.0){
-        muTemp.x[] = mumax;
+        muTemp = mumax;
       } else {
-        muTemp.x[] = (n == 1.0 ? mu_0 : 0.0);
+        muTemp = (n == 1.0 ? mu_0 : 0.0);
       }
     }
-  }
-  boundary ((scalar *){muTemp});
-  foreach_face() {
-      muv.x[] = muTemp.x[];
+    muv.x[] = fm.x[]*(muTemp);
   }
   boundary ((scalar *){muv});
 }

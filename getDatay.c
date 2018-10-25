@@ -5,7 +5,7 @@
 */
 #include "navier-stokes/centered.h"
 char filename[80];
-scalar shear[], D2p[];
+face vector shear[], D2p[];
 
 event init(t = 0)
 {
@@ -14,26 +14,24 @@ event init(t = 0)
   FILE * fp = ferr;
   int LEVEL = 8;
 
-  foreach(){
-    shear[] = (u.x[0,1] - u.x[0,-1])/(2*Delta);
+  foreach_face(y){
+    shear.y[] = (u.x[0,0] - u.x[0,-1])/(Delta);
   }
   boundary ((scalar *){shear});
 
-  foreach() {
-    double D2 = 0.;
-    foreach_dimension() {
-        double du_x = u.x[1,0] - u.x[-1,0];
-        double du_ydv_x = (u.x[0,1] - u.x[0,-1] + u.y[1,0] - u.y[-1,0])/2.;
-        D2 += sq(du_x) + sq(du_ydv_x);
-    }
-    D2 = sqrt(D2)/(2.*Delta); // note that this is D2 not \|D_{ij}\|
-    D2p[] = D2;
+  foreach_face(y) {
+    double D11 = (u.y[] - u.y[0,-1]);
+    double D22 = ((u.x[1,0]-u.x[-1,0])+(u.x[1,-1]-u.x[-1,-1]))/4.0;
+    double D12 = 0.5*(((u.y[1,0]-u.y[-1,0])+(u.y[1,-1]-u.y[-1,-1]))/4.0 + (u.x[] - u.x[0,-1]));
+    double D2 = sqrt(sq(D11)+sq(D22)+2.0*sq(D12))/(Delta);
+    // D2 /= sqrt(2.0); // note that this is $\|D_{ij}\|$
+    D2p.y[] = D2;
   }
   boundary ((scalar *){D2p});
 
   for (double y = 0.; y < 1.0; y += 1./pow(2.,LEVEL)){
     fprintf(ferr, "%g %g %g %g\n", y, interpolate(u.x, L0/2.0, y),
-            interpolate(shear, L0/2.0, y), interpolate(D2p, L0/2.0, y));
+            interpolate(shear.y, L0/2.0, y), interpolate(D2p.y, L0/2.0, y));
   }
   fflush (fp);
   fclose (fp);
