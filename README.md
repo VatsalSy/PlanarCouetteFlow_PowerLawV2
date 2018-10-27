@@ -46,4 +46,8 @@ event properties(i++) {
   }
   boundary ((scalar *){muv});
 }
+The result for the current simulation:
+<p align="center">
+  <img src="NonNewtonian_FACE.png" width="100%">
+</p>
 
